@@ -549,6 +549,79 @@ while i < 100:
 	i+=12
 ```
 
+## Reading and writing files
+### Reading
+As with everything, there is more than one way to read in files to a readable format in python. Above, we used the package `numpy` to read in a `.csv` file into a numerical array that can be used in python. While built-in functions are convenient for reading in prescribed file types-- often you will encounter unique file types that don't have a standard parser in python.
+
+Therefor, it is useful to know how to manually read files in to a readible python format. Generally speaking, files are read into python by iterating over all the lines in the file.
+
+To begin, you always need to open a text file:
+
+```python
+filename = 'data/fasta/unicorn.fa'
+
+with open(filename, 'r') as f:
+	for line in f:
+		print(line)
+f.close()
+```
+> What do you notice about how the line is printing out?
+
+Here we are using the `open()` function to open a file as readable (`r`) for python. We are then using a for loop to loop through the file.  Each line is automatically provided to us as a `str` type.
+
+> **Useful methods for strings:**
+> - `.strip()`: strips white space off the ends of a string
+ >-  `.split()`: splits a string based on a provided delimiter
+ >-  `.count()`:  counts the number of occurrences of a character within a string
+ >-  `.join()`: joins the elements of a list with a specified string
+ >- `.startswith()` and `.endswith()` returns a boolean testing if a string starts or ends with a specified character or set of characters
+ >- `.replace()` replaces a specified character or set of characters with another character
+
+#### Exercise break: fasta files to dictionaries
+Now, let's modify the above statement that will create a dictionary of dictionaries called `mysequences` that has a key for each new fasta entry in our fasta file (e.g. `Unicorn1`). Each of those name keys should then point to a sub dictionary that has the values:  		
+- `sequence`: the complete fasta sequence
+- `header`: the complete header filed
+- `name`: just the first element of the header without the ">"
+
+**Some things to consider:**
+- The sequences are broken up across multiple lines. How can you make sure that you are getting the full sequences and not just the first or last line?
+- How do you make sure that you are associating the correct fasta sequence name with the correct fasta sequence?
+
+**Bonus**:
+
+- Make each of the fields in the header (e.g. `location`) their own key in the sub dictionary.
+- Add a field to the sub dictionary (`length`) that has the length of the sequence in it.
+- Add a field to the sub dictionary (`gcfreq`) that has the GC frequency of the sequence.
+- Add a field to the sub dictionary (`comp_seq`) that has the  complement of the original sequence.
+
+### Writing
+So, now that we have *parsed* our fasta files-- let's write it out to a new format. Just as with reading, we can do this by looping through our information and writing our file line by line. Let's pretend we want to write these out to a new file format that is tab-delimited and takes the form:
+
+> `sequence_name` `<tab>` `header_info` `<tab>` `sequence_length` `<tab>`	`sequence`
+
+First, we need to use the `open()` command as we did above to initiate the file object. Here, instead of using `'r'` for read we can choose to use either `'w'`, write, or `'a'`, append. These are roughly analogous to the `>` and `>>` in bash that we learned earlier.
+
+```python
+outfilename = 'unicorn.newformat'
+with open(outfilename, 'w') as f:
+	f.write('hello')
+f.close()
+```
+The above just wrote 'hello '. We can modify the above code block to loop through our dictionary adding each sequence entry in turn:
+
+```python
+outfilename = 'unicorn.newformat'
+with open(outfilename, 'w') as f:
+    for key in mysequences.keys():
+        sdict = mysequences[key]
+        outlist = [sdict['name'], sdict['header'], str(len(sdict['sequence'])), sdict['sequence']]
+        f.write('\t'.join(outlist))
+f.close()
+```
+
+#### Exercise
+Write a set of commands that will write out the complement of each of the fasta sequences to a new file called `unicorns_complement.fa`. The header should contain all the information that the old header contained. Make sure that each header line starts with a `>`.
+
 ## Functions
 
 We have just written code to read in a file and parse it to retrieve the different elements of the fasta file. What if we wanted to do the same thing, but with a different file? Say we wanted to now run the same code on `griffin.fa`. Well, we could copy and paste the code and change the filename at the top. This is probably okay once but you can easily see how this might lead to massive amounts of code that is redundant and difficult to comprehend.
@@ -632,81 +705,6 @@ Here, we set the default value of x to be 0.
 > Test this out. What happens if you try running `addx(5)` now? What about `addx(5, 6)`?
 
 In addition to setting a default value for a variable you can also set the  default variable to be the built in value `None`. `None` in python signifies 'empty' or 'no value'. Often it is used in functions to indicate that a value is not required for the function. For example take a look at `help(np.sum())`.  `None` is used to indicate parameters that are optional (e.g. `sum(a, axis=None, dtype=None, out=None`). You can choose to pass a value or not and the function will still work.
-
-
-## Reading and writing files
-### Reading
-As with everything, there is more than one way to read in files to a readable format in python. Above, we used the package `numpy` to read in a `.csv` file into a numerical array that can be used in python. While built-in functions are convenient for reading in prescribed file types-- often you will encounter unique file types that don't have a standard parser in python.
-
-Therefor, it is useful to know how to manually read files in to a readible python format. Generally speaking, files are read into python by iterating over all the lines in the file.
-
-To begin, you always need to open a text file:
-
-```python
-filename = 'data/fasta/unicorn.fa'
-
-with open(filename, 'r') as f:
-	for line in f:
-		print(line)
-f.close()
-```
-> What do you notice about how the line is printing out?
-
-Here we are using the `open()` function to open a file as readable (`r`) for python. We are then using a for loop to loop through the file.  Each line is automatically provided to us as a `str` type.
-
-> **Useful methods for strings:**
-> - `.strip()`: strips white space off the ends of a string
- >-  `.split()`: splits a string based on a provided delimiter
- >-  `.count()`:  counts the number of occurrences of a character within a string
- >-  `.join()`: joins the elements of a list with a specified string
- >- `.startswith()` and `.endswith()` returns a boolean testing if a string starts or ends with a specified character or set of characters
- >- `.replace()` replaces a specified character or set of characters with another character
-
-#### Exercise break: fasta files to dictionaries
-Now, let's modify the above statement that will create a dictionary of dictionaries called `mysequences` that has a key for each new fasta entry in our fasta file (e.g. `Unicorn1`). Each of those name keys should then point to a sub dictionary that has the values:  		
-- `sequence`: the complete fasta sequence
-- `header`: the complete header filed
-- `name`: just the first element of the header without the ">"
-
-**Some things to consider:**
-- The sequences are broken up across multiple lines. How can you make sure that you are getting the full sequences and not just the first or last line?
-- How do you make sure that you are associating the correct fasta sequence name with the correct fasta sequence?
-
-**Bonus**:
-
-- Make each of the fields in the header (e.g. `location`) their own key in the sub dictionary.
-- Add a field to the sub dictionary (`length`) that has the length of the sequence in it.
-- Add a field to the sub dictionary (`gcfreq`) that has the GC frequency of the sequence.
-- Add a field to the sub dictionary (`comp_seq`) that has the  complement of the original sequence.
-
-### Writing
-So, now that we have *parsed* our fasta files-- let's write it out to a new format. Just as with reading, we can do this by looping through our information and writing our file line by line. Let's pretend we want to write these out to a new file format that is tab-delimited and takes the form:
-
-> `sequence_name` `<tab>` `header_info` `<tab>` `sequence_length` `<tab>`	`sequence`
-
-First, we need to use the `open()` command as we did above to initiate the file object. Here, instead of using `'r'` for read we can choose to use either `'w'`, write, or `'a'`, append. These are roughly analogous to the `>` and `>>` in bash that we learned earlier.
-
-```python
-outfilename = 'unicorn.newformat'
-with open(outfilename, 'w') as f:
-	f.write('hello')
-f.close()
-```
-The above just wrote 'hello '. We can modify the above code block to loop through our dictionary adding each sequence entry in turn:
-
-```python
-outfilename = 'unicorn.newformat'
-with open(outfilename, 'w') as f:
-    for key in mysequences.keys():
-        sdict = mysequences[key]
-        outlist = [sdict['name'], sdict['header'], str(len(sdict['sequence'])), sdict['sequence']]
-        f.write('\t'.join(outlist))
-f.close()
-```
-
-#### Exercise
-Write a set of commands that will write out the complement of each of the fasta sequences to a new file called `unicorns_complement.fa`. The header should contain all the information that the old header contained. Make sure that each header line starts with a `>`.
-
 
 ## Defensive programming
 As a programmer it is important to assume that there will be errors. Human errors in input, errors in how a function is used, etc. One powerful thing you can do is attempt to guess how and where a function might be misused. One way you can do this within python is with `assertion` statements. Assertion statements will check to make sure some condition is true-- and will raise a warning and break the program if it is not. Assertion statements take the general form:
